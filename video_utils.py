@@ -36,24 +36,25 @@ def download_video(url: str, format_code: str, output_path: str):
             ydl.download([url])
     except Exception as e:
         print(f"yt-dlp download failed, trying Cobalt API... Error: {e}")
-        # Fallback на Cobalt API (публичные инстансы обходят блокировки IP)
+        # Fallback на Cobalt API (совместимость с v7 и v8)
         headers = {
             "Accept": "application/json",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
         }
         data = {
             "url": url,
-            "vQuality": "1080" if format_code == "best" else "720"
+            "vQuality": "1080" if format_code == "best" else "720", # v7
+            "videoQuality": "1080" if format_code == "best" else "720" # v8
         }
         
-        # Список известных публичных инстансов Cobalt (v7 API)
+        # Список актуальных инстансов Cobalt (смесь v7 и v8)
         instances = [
+            "https://cobalt.owo.vc/",
+            "https://api.cobalt.cat/",
+            "https://cobalt.mirn.in/",
             "https://cobalt.owo.vc/api/json",
-            "https://cobalt.kwiatechu.com/api/json",
-            "https://api.cobalt.cat/api/json",
-            "https://cobalt.mirn.in/api/json",
-            "https://cobalt.canine.ly/api/json",
-            "https://co.wuk.sh/api/json"
+            "https://api.cobalt.cat/api/json"
         ]
         
         for api_url in instances:
@@ -74,5 +75,25 @@ def download_video(url: str, format_code: str, output_path: str):
             except Exception as e:
                 print(f"Failed on {api_url}: {e}")
                 continue
+        
+        # Если Cobalt полностью мертв, пробуем Itzpire REST API (еще один популярный бесплатный сервис)
+        try:
+            print("Trying Itzpire API...")
+            itz_url = f"https://itzpire.com/download/youtube?url={url}"
+            itz_res = requests.get(itz_url, headers=headers, timeout=15)
+            if itz_res.status_code == 200:
+                itz_data = itz_res.json()
+                if itz_data.get("status") == "success" and "data" in itz_data:
+                    video_url = itz_data["data"].get("video")
+                    if video_url:
+                        print("Itzpire success, downloading stream...")
+                        with requests.get(video_url, stream=True) as r:
+                            r.raise_for_status()
+                            with open(output_path, 'wb') as f:
+                                for chunk in r.iter_content(chunk_size=8192):
+                                    f.write(chunk)
+                        return
+        except Exception as e:
+            print(f"Itzpire failed: {e}")
                 
-        raise Exception("Все инстансы Cobalt недоступны или заблокированы.")
+        raise Exception("Все инстансы Cobalt и Itzpire недоступны или заблокированы.")
