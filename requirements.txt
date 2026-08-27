@@ -2,3 +2,4 @@ pyrogram>=2.0.106
 TgCrypto>=1.2.5
 yt-dlp>=2026.8.19
 aiohttp>=3.9.0
+requests

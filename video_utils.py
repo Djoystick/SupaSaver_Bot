@@ -1,4 +1,6 @@
 import yt_dlp
+import requests
+import uuid
 
 def get_video_info(url: str):
     ydl_opts = {
@@ -6,7 +8,7 @@ def get_video_info(url: str):
         'no_warnings': True,
         'extract_flat': False,
         'noplaylist': True,
-        'extractor_args': {'youtube': ['player_client=ios,android']}, # Используем ТОЛЬКО мобильные клиенты без куки
+        'extractor_args': {'youtube': ['player_client=android,ios']},
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
@@ -16,17 +18,48 @@ def get_video_info(url: str):
                 'thumbnail': info.get('thumbnail'),
             }
         except Exception as e:
-            print(f"Error extracting info: {e}")
-            return {"error": str(e)}
+            # Fallback для получения заголовка
+            print(f"yt-dlp info error: {e}")
+            return {"title": "Видео из YouTube", "thumbnail": None}
 
 def download_video(url: str, format_code: str, output_path: str):
-    ydl_opts = {
-        'format': format_code,
-        'outtmpl': output_path,
-        'quiet': True,
-        'noplaylist': True,
-        'extractor_args': {'youtube': ['player_client=ios,android']}, # Без куки веб-браузера!
-        'merge_output_format': 'mp4'
-    }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+    try:
+        ydl_opts = {
+            'format': format_code,
+            'outtmpl': output_path,
+            'quiet': True,
+            'noplaylist': True,
+            'extractor_args': {'youtube': ['player_client=android,ios']},
+            'merge_output_format': 'mp4'
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+    except Exception as e:
+        print(f"yt-dlp download failed, trying Cobalt API... Error: {e}")
+        # Fallback на Cobalt API (публичные инстансы обходят блокировки IP)
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "url": url,
+            "vQuality": "1080" if format_code == "best" else "720"
+        }
+        
+        # Пробуем популярный инстанс co.wuk.sh
+        api_url = "https://co.wuk.sh/api/json"
+        response = requests.post(api_url, json=data, headers=headers, timeout=15)
+        
+        if response.status_code == 200:
+            result = response.json()
+            if "url" in result:
+                download_url = result["url"]
+                # Скачиваем файл напрямую
+                print("Cobalt success, downloading stream...")
+                with requests.get(download_url, stream=True) as r:
+                    r.raise_for_status()
+                    with open(output_path, 'wb') as f:
+                        for chunk in r.iter_content(chunk_size=8192):
+                            f.write(chunk)
+                return
+        raise Exception(f"Все методы скачивания заблокированы. Cobalt status: {response.status_code}")
