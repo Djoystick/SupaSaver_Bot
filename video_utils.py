@@ -5,8 +5,9 @@ def get_video_info(url: str):
         'quiet': True,
         'no_warnings': True,
         'extract_flat': False,
-        'noplaylist': True, # Игнорируем плейлисты, если в ссылке есть &list=
-        'cookiefile': 'cookies.txt', # Подключаем куки для обхода блокировок YouTube
+        'noplaylist': True,
+        'cookiefile': 'cookies.txt',
+        'extractor_args': {'youtube': ['player_client=android']}, # Обход "The page needs to be reloaded"
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
@@ -25,8 +26,9 @@ def download_video(url: str, format_code: str, output_path: str):
         'outtmpl': output_path,
         'quiet': True,
         'noplaylist': True,
-        'cookiefile': 'cookies.txt', # Подключаем куки для скачивания
-        'merge_output_format': 'mp4' # ffmpeg склеит в mp4
+        'cookiefile': 'cookies.txt',
+        'extractor_args': {'youtube': ['player_client=android']}, # Обход блокировок IP
+        'merge_output_format': 'mp4'
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
