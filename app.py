@@ -99,7 +99,7 @@ async def handle_download(client, callback):
             os.remove(filename)
         url_storage.pop(callback.message.id, None)
 
-# --- Блок для Hugging Face Gradio Spaces (Микро веб-сервер) ---
+# --- Блок для Render (Микро веб-сервер против отключений) ---
 from aiohttp import web
 async def health_check(request):
     return web.Response(text="Bot is running!")
@@ -109,9 +109,11 @@ async def run_dummy_server():
     app_web.router.add_get('/', health_check)
     runner = web.AppRunner(app_web)
     await runner.setup()
-    site = web.TCPSite(runner, '0.0.0.0', 7860)
+    
+    port = int(os.environ.get("PORT", 10000))
+    site = web.TCPSite(runner, '0.0.0.0', port)
     await site.start()
-    print("Веб-сервер запущен на порту 7860 (Для Hugging Face)")
+    print(f"Веб-сервер запущен на порту {port}")
 
 if __name__ == "__main__":
     # Запускаем веб-сервер в фоне для прохождения проверок Hugging Face
