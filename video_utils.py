@@ -6,8 +6,7 @@ def get_video_info(url: str):
         'no_warnings': True,
         'extract_flat': False,
         'noplaylist': True,
-        'cookiefile': 'cookies.txt',
-        'extractor_args': {'youtube': ['player_client=ios,android,tv']}, # Расширенный пул клиентов
+        'extractor_args': {'youtube': ['player_client=ios,android']}, # Используем ТОЛЬКО мобильные клиенты без куки
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
@@ -26,8 +25,7 @@ def download_video(url: str, format_code: str, output_path: str):
         'outtmpl': output_path,
         'quiet': True,
         'noplaylist': True,
-        'cookiefile': 'cookies.txt',
-        'extractor_args': {'youtube': ['player_client=ios,android,tv']}, # Расширенный пул клиентов
+        'extractor_args': {'youtube': ['player_client=ios,android']}, # Без куки веб-браузера!
         'merge_output_format': 'mp4'
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
