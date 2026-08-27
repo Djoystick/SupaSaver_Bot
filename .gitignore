@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+# Временные файлы загрузок
+temp_*.mp4
+*.mp4
+*.webm
+*.mkv
+*.mp3
+*.m4a
