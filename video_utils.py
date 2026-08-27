@@ -7,7 +7,7 @@ def get_video_info(url: str):
         'extract_flat': False,
         'noplaylist': True,
         'cookiefile': 'cookies.txt',
-        'extractor_args': {'youtube': ['player_client=android']}, # Обход "The page needs to be reloaded"
+        'extractor_args': {'youtube': ['player_client=ios,android,tv']}, # Расширенный пул клиентов
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
@@ -27,7 +27,7 @@ def download_video(url: str, format_code: str, output_path: str):
         'quiet': True,
         'noplaylist': True,
         'cookiefile': 'cookies.txt',
-        'extractor_args': {'youtube': ['player_client=android']}, # Обход блокировок IP
+        'extractor_args': {'youtube': ['player_client=ios,android,tv']}, # Расширенный пул клиентов
         'merge_output_format': 'mp4'
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
