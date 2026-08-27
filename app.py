@@ -99,14 +99,34 @@ async def handle_download(client, callback):
             os.remove(filename)
         url_storage.pop(callback.message.id, None)
 
-# --- Блок для Render (Микро веб-сервер против отключений) ---
+# --- Блок для Render (Микро веб-сервер против отключений и API для куки) ---
 from aiohttp import web
+
+COOKIE_SECRET = os.environ.get("COOKIE_SECRET", "supasaver_super_secret_123")
+
 async def health_check(request):
     return web.Response(text="Bot is running!")
+
+async def update_cookies(request):
+    secret = request.headers.get("X-Secret-Token")
+    if secret != COOKIE_SECRET:
+        return web.Response(status=403, text="Forbidden: Неверный токен")
+    
+    data = await request.text()
+    if not data:
+        return web.Response(status=400, text="No cookie data provided")
+        
+    # Записываем свежие куки
+    with open("cookies.txt", "w", encoding="utf-8") as f:
+        f.write(data)
+        
+    print("✅ Свежие куки успешно загружены на сервер через API!")
+    return web.Response(text="Cookies updated successfully!")
 
 async def run_dummy_server():
     app_web = web.Application()
     app_web.router.add_get('/', health_check)
+    app_web.router.add_post('/update_cookies', update_cookies)
     runner = web.AppRunner(app_web)
     await runner.setup()
     
