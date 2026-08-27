@@ -1,19 +1,29 @@
-FROM python:3.11-slim
+FROM aiogram/telegram-bot-api:latest
 
-# Устанавливаем ffmpeg для склейки видео и аудио
-RUN apt-get update && \
-    apt-get install -y ffmpeg && \
-    rm -rf /var/lib/apt/lists/*
+# Переключаемся на root для установки пакетов
+USER root
 
-# Рабочая директория
+# Устанавливаем Python, FFmpeg, bash и curl
+RUN apk update && apk add --no-cache python3 py3-pip ffmpeg bash curl
+
+# Создаем виртуальное окружение Python (требование Alpine Linux для pip)
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
 WORKDIR /app
 
-# Копируем зависимости и устанавливаем их
+# Копируем и устанавливаем зависимости Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем весь остальной код
+# Копируем код бота и скрипт запуска
 COPY . .
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
-# Команда запуска бота
-CMD ["python", "main.py"]
+# Меняем права на директорию, чтобы API сервер мог туда писать
+RUN chmod -R 777 /app
+RUN chmod -R 777 /var/lib/telegram-bot-api
+
+# Запускаем через наш скрипт
+ENTRYPOINT ["/start.sh"]

@@ -6,13 +6,19 @@ from aiogram.filters import Command
 from aiogram.types import FSInputFile
 from aiohttp import web
 
+from aiogram.client.session.aiohttp import AiohttpSession
+from aiogram.client.telegram import TelegramAPIServer
 from video_utils import get_video_info, download_video
 
-# Переменные окружения (задаются в настройках Render)
+# Переменные окружения
 BOT_TOKEN = os.getenv("BOT_TOKEN", "ВАШ_ТОКЕН_БОТА")
-PORT = int(os.getenv("PORT", 10000))
+PORT = int(os.getenv("PORT", 7860)) # Порт 7860 стандарт для Hugging Face
 
-bot = Bot(token=BOT_TOKEN)
+# Подключаем бота к ЛОКАЛЬНОМУ серверу Telegram API (порт 8081)
+session = AiohttpSession(
+    api=TelegramAPIServer.from_base("http://localhost:8081")
+)
+bot = Bot(token=BOT_TOKEN, session=session)
 dp = Dispatcher()
 
 # Хранилище ссылок (Telegram ограничивает callback_data 64 байтами, 
