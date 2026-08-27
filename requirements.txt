@@ -1,3 +1,4 @@
-aiogram>=3.4.0
-yt-dlp>=2023.12.30
-aiohttp>=3.9.0
+pyrogram
+TgCrypto
+yt-dlp
+aiohttp
