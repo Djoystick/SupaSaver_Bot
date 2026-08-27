@@ -43,9 +43,13 @@ async def handle_link(message: Message):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text="🎬 360p", callback_data="dl|360"),
-            InlineKeyboardButton(text="🎬 720p", callback_data="dl|720")
+            InlineKeyboardButton(text="🎬 480p", callback_data="dl|480")
         ],
-        [InlineKeyboardButton(text="🎵 Только аудио (MP3)", callback_data="dl|audio")]
+        [
+            InlineKeyboardButton(text="🎬 720p", callback_data="dl|720"),
+            InlineKeyboardButton(text="🎬 1080p", callback_data="dl|1080")
+        ],
+        [InlineKeyboardButton(text="🎵 Audio", callback_data="dl|audio")]
     ])
     
     await msg.delete()
