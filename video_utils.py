@@ -46,20 +46,33 @@ def download_video(url: str, format_code: str, output_path: str):
             "vQuality": "1080" if format_code == "best" else "720"
         }
         
-        # Пробуем популярный инстанс co.wuk.sh
-        api_url = "https://co.wuk.sh/api/json"
-        response = requests.post(api_url, json=data, headers=headers, timeout=15)
+        # Список известных публичных инстансов Cobalt (v7 API)
+        instances = [
+            "https://cobalt.owo.vc/api/json",
+            "https://cobalt.kwiatechu.com/api/json",
+            "https://api.cobalt.cat/api/json",
+            "https://cobalt.mirn.in/api/json",
+            "https://cobalt.canine.ly/api/json",
+            "https://co.wuk.sh/api/json"
+        ]
         
-        if response.status_code == 200:
-            result = response.json()
-            if "url" in result:
-                download_url = result["url"]
-                # Скачиваем файл напрямую
-                print("Cobalt success, downloading stream...")
-                with requests.get(download_url, stream=True) as r:
-                    r.raise_for_status()
-                    with open(output_path, 'wb') as f:
-                        for chunk in r.iter_content(chunk_size=8192):
-                            f.write(chunk)
-                return
-        raise Exception(f"Все методы скачивания заблокированы. Cobalt status: {response.status_code}")
+        for api_url in instances:
+            try:
+                print(f"Trying Cobalt instance: {api_url}")
+                response = requests.post(api_url, json=data, headers=headers, timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    if "url" in result:
+                        download_url = result["url"]
+                        print(f"Cobalt success on {api_url}, downloading stream...")
+                        with requests.get(download_url, stream=True) as r:
+                            r.raise_for_status()
+                            with open(output_path, 'wb') as f:
+                                for chunk in r.iter_content(chunk_size=8192):
+                                    f.write(chunk)
+                        return # Успешный выход
+            except Exception as e:
+                print(f"Failed on {api_url}: {e}")
+                continue
+                
+        raise Exception("Все инстансы Cobalt недоступны или заблокированы.")
