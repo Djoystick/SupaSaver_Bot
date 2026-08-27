@@ -37,6 +37,9 @@ async def handle_link(message: Message):
     if not info:
         return await msg.edit_text("❌ Не удалось получить информацию. Возможно, профиль закрыт приватностью или ссылка неверна.")
     
+    if "error" in info:
+        return await msg.edit_text(f"❌ Ошибка получения видео:\n<code>{info['error']}</code>", parse_mode="HTML")
+        
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text="🎬 360p", callback_data="dl|360"),
